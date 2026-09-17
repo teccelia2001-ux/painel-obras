@@ -14,9 +14,16 @@ const PHOTO_FIELDS = ["fotos_antes","fotos_durante","fotos_depois","fotos_abertu
 "fotos_transformador_tape","fotos_transformador_placa_instalado","fotos_transformador_instalado",
 "fotos_transformador_antes_retirar","fotos_transformador_tombamento_retirado","fotos_transformador_placa_retirado"];
 
+// Campos contados. O dashboard original soma apenas os 23 de PHOTO_FIELDS, o que
+// ignora categorias que o módulo de Relatórios conhece (checklist, altimetria,
+// medidor...). Aqui usamos a lista completa para os dois módulos baterem.
+const CAMPOS_CONTADOS = typeof CATEGORIAS !== "undefined"
+  ? CATEGORIAS.filter(c => !c.doc).map(c => c.key)
+  : PHOTO_FIELDS;
+
 function contarFotos(o){
   let t = 0;
-  PHOTO_FIELDS.forEach(f => { if (o[f] && o[f].length) t += o[f].length; });
+  CAMPOS_CONTADOS.forEach(f => { if (o[f] && o[f].length) t += o[f].length; });
   if (Array.isArray(o.postes_data)) o.postes_data.forEach(p => {
     t += (p.fotos_antes?.length||0) + (p.fotos_durante?.length||0)
        + (p.fotos_depois?.length||0) + (p.fotos_medicao?.length||0);
@@ -26,6 +33,7 @@ function contarFotos(o){
 
 /* ---------- Estado ---------- */
 let obras = [];
+let paginaAtual = "Dashboard";
 const state = { equipe:"todas", periodo:"mes", servico:"todos", busca:"" };
 
 /* ---------- Datas ---------- */
@@ -57,7 +65,7 @@ async function loadObras(refresh){
   }
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("page").classList.remove("hidden");
-  render();
+  if (paginaAtual === "Relatórios") renderRelatorios(); else render();
 }
 
 /* ---------- Dados de demonstração ---------- */
@@ -76,12 +84,20 @@ function gerarDemo(){
       equipe: equipes[Math.floor(Math.random()*equipes.length)],
       tipo_servico: servicos[Math.floor(Math.random()*servicos.length)],
       created_at: d.toISOString(),
+      responsavel: ["Carlos Menezes","Ana Ribeiro","Paulo Tavares","Juliana Costa","Marcos Lima"][i%5],
       tem_atipicidade: Math.random() < 0.17,
       data_fechamento: Math.random() < 0.72 ? d.toISOString() : null,
       postes_data: []
     };
-    ["fotos_antes","fotos_durante","fotos_depois","fotos_abertura","fotos_fechamento"].forEach(f=>{
-      o[f] = Array.from({length:Math.floor(Math.random()*5)}, (_,k)=>"f"+k+".jpg");
+    // Preenche um subconjunto aleatório das categorias, para o Book variar entre obras
+    const pool = typeof CATEGORIAS !== "undefined"
+      ? CATEGORIAS.map(c=>c.key)
+      : ["fotos_antes","fotos_durante","fotos_depois","fotos_abertura","fotos_fechamento"];
+    const quantas = 3 + Math.floor(Math.random()*7);
+    const escolhidas = new Set(["fotos_antes","fotos_durante","fotos_depois"]);
+    while (escolhidas.size < quantas) escolhidas.add(pool[Math.floor(Math.random()*pool.length)]);
+    escolhidas.forEach(f=>{
+      o[f] = Array.from({length:1+Math.floor(Math.random()*4)}, (_,k)=>"f"+k+".jpg");
     });
     const np = Math.floor(Math.random()*3);
     for (let p=0;p<np;p++) o.postes_data.push({
@@ -369,7 +385,9 @@ function irPara(nome, el){
   el.classList.add("active");
   document.getElementById("crumb").textContent = nome;
   if (window.innerWidth < 1024) toggleSidebar();
+  paginaAtual = nome;
   if (nome === "Dashboard"){ render(); return; }
+  if (nome === "Relatórios"){ renderRelatorios(); return; }
   document.getElementById("page").innerHTML = `
     <div class="mb-8"><h1 class="page-title">${nome}</h1><p class="page-subtitle">${NAV.find(n=>n.nome===nome).desc}</p></div>
     <div class="card-padded text-center py-20">

@@ -26,6 +26,10 @@ body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-se
 .dark .badge-blue{background:#1e3a8a66;color:#93c5fd}
 .badge-amber{display:inline-flex;align-items:center;background:#fef3c7;color:#b45309;border-radius:9999px;padding:.125rem .625rem;font-size:.75rem;font-weight:600}
 .dark .badge-amber{background:#78350f66;color:#fcd34d}
+.badge-emerald{display:inline-flex;align-items:center;background:#d1fae5;color:#047857;border-radius:9999px;padding:.125rem .625rem;font-size:.75rem;font-weight:600}
+.dark .badge-emerald{background:#064e3b66;color:#6ee7b7}
+.badge-slate{display:inline-flex;align-items:center;background:#f1f5f9;color:#64748b;border-radius:9999px;padding:.125rem .625rem;font-size:.75rem;font-weight:600}
+.dark .badge-slate{background:#33415566;color:#94a3b8}
 .spinner{width:2.5rem;height:2.5rem;border:3px solid #f1f5f9;border-top-color:#dc2626;border-radius:9999px;animation:spin 1s linear infinite}
 .dark .spinner{border-color:#334155;border-top-color:#dc2626}
 @keyframes spin{to{transform:rotate(360deg)}}
